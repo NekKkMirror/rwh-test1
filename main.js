@@ -3,71 +3,82 @@ function main() {
 }
 
 function _main() {
-  return (_main = _asyncToGenerator(_regeneratorRuntime().mark((function A() {
-    var t, e, r, n, i, o, a, c, s, u, l, d;
-
-    return _regeneratorRuntime().wrap((function (A) {
-      for (; ; )
-        switch (A.prev = A.next) {
-        case 0:
-          return postMessageWithContentHeight(),
-          delayShowChallengeData(),
-          A.prev = 2,
-          e = null === (i = document.getElementById('challenge')) || void 0 === i ? void 0 : i.value,
-          r = null === (o = document.getElementById('incident')) || void 0 === o ? void 0 : o.value,
-          setRunStatus("⧗"),
-          A.next = 8,
-          runChallenge();
-
-        case 8:
-          a = A.sent,
-          setRunStatus("✔"),
-          t = a.token,
-          n = _objectSpread2(_objectSpread2({}, a), {}, {
-            error: ""
-          }),
-          A.next = 21;
-          break;
-
-        case 14:
-          A.prev = 14,
-          A.t0 = A.catch(2),
-          console.error(A.t0),
-          setRunStatus("✖"),
-          c = {
-            level: 'critical',
-            build_ts: '2024-10-15T09:22:43.174Z',
-            lib_version: '0.3.2',
-            challenge_id: asString(r, 128),
-            user_agent: asString(window.navigator.userAgent, 384),
-            url: asString(window.location.href, 512),
-            client_ts: (new Date).toISOString()
-          },
-          A.t0 instanceof Error ? (c.message = asString(A.t0.message, 256),
-          s = A.t0.stack,
-          c.stack_trace = asString("string" == typeof s ? s.split(window.location.href).join("") : s, 1024)) : c.message = asString(A.t0, 1024),
-          n = {
-            token: e,
-            fp: "",
-            error: JSON.stringify(c)
-          };
-
-        case 21:
-          return u = new URLSearchParams(document.location.search),
-          l = u.get(MODE_PARAM) === MOBILE_MODE,
-          A.next = 25,
-          sendCandidate(n);
-
-        case 25:
-          d = A.sent,
-          l ? handleMobile(d) : handleWeb(d, t);
-
-        case 27:
-        case 'end':
-          return A.stop()
+  return (_main = _asyncToGenerator(_regeneratorRuntime().mark(function callFunctionA() {
+    var token, error, challengeValue, incidentValue, result, candidateData, stack, queryParams, isMobileMode, response;
+    
+    return _regeneratorRuntime().wrap(function wrapFunctionA(context) {
+      for (;;) {
+        switch (context.prev = context.next) {
+          case 0:
+            postMessageWithContentHeight();
+            delayShowChallengeData();
+            
+            context.prev = 2;
+            challengeValue = document.getElementById('challenge')?.value;
+            incidentValue = document.getElementById('incident')?.value;
+            setRunStatus("⧗");
+            context.next = 8;
+            return runChallenge();
+          
+          case 8:
+            result = context.sent;
+            setRunStatus("✔");
+            token = result.token;
+            candidateData = { ...result, error: "" };
+            context.next = 21;
+            break;
+          
+          case 14:
+            context.prev = 14;
+            context.t0 = context.catch(2);
+            console.error(context.t0);
+            setRunStatus("✖");
+            
+            error = {
+              level: 'critical',
+              build_ts: '2024-10-15T09:22:43.174Z',
+              lib_version: '0.3.2',
+              challenge_id: asString(incidentValue, 128),
+              user_agent: asString(window.navigator.userAgent, 384),
+              url: asString(window.location.href, 512),
+              client_ts: new Date().toISOString()
+            };
+            
+            if (context.t0 instanceof Error) {
+              error.message = asString(context.t0.message, 256);
+              stack = context.t0.stack;
+              error.stack_trace = asString(
+                typeof stack === 'string' ? stack.split(window.location.href).join('') : stack,
+                1024
+              );
+            } else {
+              error.message = asString(context.t0, 1024);
+            }
+            
+            candidateData = {
+              token: challengeValue,
+              fp: "",
+              error: JSON.stringify(error)
+            };
+          
+          case 21:
+            queryParams = new URLSearchParams(document.location.search);
+            isMobileMode = queryParams.get(MODE_PARAM) === MOBILE_MODE;
+            
+            context.next = 25;
+            return sendCandidate(candidateData);
+          
+          case 25:
+            response = context.sent;
+            isMobileMode ? handleMobile(response) : handleWeb(response, token);
+          
+          case 27:
+          case 'end':
+            return context.stop();
         }
-    }), A, null, [[2, 14]])
-  })))).apply(this, arguments)
+      }
+    }, callFunctionA, null, [[2, 14]]);
+  }))).apply(this, arguments);
 }
 
 window.addEventListener('load', main);
