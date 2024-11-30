@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-class FileManager {
+module.exports.FileManager = class FileManager {
 	constructor(outputDir = '.') {
 		this.outputDir = outputDir;
 		this.ensureDirectoryExists(this.outputDir);
@@ -24,16 +24,15 @@ class FileManager {
 			throw err;
 		}
 	}
-	
-	writeReport(report, filename = 'report.json') {
-		const reportPath = path.join(this.outputDir, filename);
+
+	writeToFile(content, filename) {
+		const filePath = path.join(this.outputDir, filename);
+		
 		try {
-			fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf8');
-			console.log(`Report generated at: ${reportPath}`);
+			fs.writeFileSync(filePath, content, 'utf8');
+			console.log(`File written at: ${filePath}`);
 		} catch (err) {
-			console.error(`Failed to write report to ${reportPath}:`, err);
+			console.error(`Failed to write to file ${filePath}:`, err);
 		}
 	}
 }
-
-module.exports = FileManager;

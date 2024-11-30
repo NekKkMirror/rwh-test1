@@ -2,7 +2,10 @@ const babelParser = require('@babel/parser');
 const babelTraverse = require('@babel/traverse').default;
 
 const path = require("node:path");
-const FileManager = require('./file-manager');
+
+const { FileManager } = require("./file-manager");
+const { generateControlFlowGraph } = require("./generate-control-flow-graph");
+const { ROOT_DIR } = require("./constants");
 
 class Analyzer {
 	constructor(filePath, options = {}) {
@@ -11,11 +14,7 @@ class Analyzer {
 		this.fileManager = new FileManager(this.options.outputDir);
 		this.code = this.loadFile();
 		this.ast = this.parseCode(this.code);
-		this.report = {
-			imports: [],
-			functions: [],
-			calls: []
-		};
+		this.report = null
 	}
 	
 	loadFile() {
@@ -36,7 +35,13 @@ class Analyzer {
 		}
 	}
 	
-	analyze() {
+	analyze(isReportNeeded = true) {
+		this.report = {
+			imports: [],
+			functions: [],
+			calls: []
+		};
+		
 		babelTraverse(this.ast, {
 			ImportDeclaration: ({ node }) => {
 				const source = node.source.value;
@@ -45,32 +50,36 @@ class Analyzer {
 			},
 			CallExpression: ({ node }) => {
 				if (node.callee.type === 'Identifier' && node.callee.name === 'main') {
-					console.log('Вызов функции main');
+					console.log('Call function main');
 					this.report.calls.push('main');
 				}
 			},
 			FunctionDeclaration: ({ node }) => {
 				const functionName = node.id.name;
-				console.log('Объявленная функция:', functionName);
+				console.log('Declared function:', functionName);
 				this.report.functions.push(functionName);
 			}
 		});
 		
-		this.fileManager.writeReport(this.report);
+		if (isReportNeeded) this.fileManager.writeToFile(JSON.stringify(this.report, null, 2), 'report.json');
 	}
 	
 	printAST() {
-		this.fileManager.writeReport(this.ast, 'ast.json');
+		this.fileManager.writeToFile(JSON.stringify(this.ast, null, 2), 'ast.json');
 	}
 }
 
-function analyzeMainFile() {
-	const ROOT_DIR = process.cwd();
+module.exports.analyzeMainFile = (generateGraph = false, generateAST = false) => {
 	const mainFilePath = path.join(ROOT_DIR, 'main.js');
 	const analyzer = new Analyzer(mainFilePath, { plugins: ['classProperties'], outputDir: './reports' });
-	
-	analyzer.analyze();
-	analyzer.printAST()
-}
 
-module.exports = { analyzeMainFile };
+	if (generateAST) {
+		analyzer.analyze();
+		analyzer.printAST();
+	}
+	
+	if (generateGraph) {
+		if (!analyzer.report) analyzer.analyze(false)
+		generateControlFlowGraph(analyzer.report).catch(console.error);
+	}
+}
